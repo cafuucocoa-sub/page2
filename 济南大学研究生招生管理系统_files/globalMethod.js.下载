@@ -1,0 +1,68 @@
+$(function() {
+	$.fn.grid.constructor.DEFAULTS.importFileType = "xls,dbf";
+	$.fn.upload.constructor.DEFAULTS.previewBtn=true;
+	
+	$(".ez-adm-header-trigger").on("click", function() {
+		var $icon = $(this).find(".icon");
+		
+		if ($icon.hasClass("icon-menu-unfold")) {
+			var logoNameUrl = get("ADMIN_LOGO_NAME_URL").getValue();
+			$(".ez-adm-layout-sider-logo").find("img").attr("src", logoNameUrl)
+		} else {
+           var logoUrl = get("ADMIN_LOGO_URL").getValue();
+			$(".ez-adm-layout-sider-logo").find("img").attr("src", logoUrl)
+		}
+	});
+});
+
+var replaceCommaByBr = function (value){
+	if (value == null) {
+		return value;
+	}
+	return value.replace(new RegExp(",","g"),"<br/>");
+}
+
+//对TreeTable数据进行改造，目前框架对TreeTable有些东西不支持，把TreeTable相关的函数放在这里，等框架支持后删除
+!function(a){
+	a.treeTableExt={
+		//修改行数据
+		updateRowCell:function (rowData,cell,cellValue){
+			rowData || {};
+			var needModiField = {children: null,_parent:null,_nodes:null};
+			if($.trim(cell)){
+				needModiField[cell] = cellValue;
+			}
+			var row = $.extend({}, rowData, needModiField);
+			return row;
+		},
+		//获取到可以转换成json的table数据
+		getTableRow:function(datas){
+			var newData = [];
+		    for(var i=0;i<datas.length;i++){
+		    	newData.push(treeTableExt.updateRowCell(datas[i]));
+		    }
+		    return newData;
+		}
+		
+	}
+}(this);
+// 配置用户选择框
+$.fn.userSelect.constructor.DEFAULTS.selectTypes = [{
+	target: "硕士考生",
+	url: "zsTyYhxz/enterSsksSelect",
+	userIdField: "userId", // 解析userId的字段名，默认userId
+	loginIdField: "kskey", // 解析userId的字段名，默认userId
+	userNameField: "xm" // 解析userName的字段名，默认userName
+}/*,{
+	target: "教职工",
+	url: "zsTyYhxz/enterJzgSelect",
+	userIdField: "userId", // 解析userId的字段名，默认userId
+	loginIdField: "loginId", // 解析userId的字段名，默认userId
+	userNameField: "xm" // 解析userName的字段名，默认userName
+},{
+	target: "博士考生",
+	url: "zsTyYhxz/enterBsksSelect",
+	userIdField: "userId", // 解析userId的字段名，默认userId
+	loginIdField: "kskey", // 解析userId的字段名，默认userId
+	userNameField: "xm" // 解析userName的字段名，默认userName
+}*/];

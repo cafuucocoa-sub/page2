@@ -1,0 +1,168 @@
+/**
+ * 调整报考院系后自动加载报考专业
+ */
+var _loadBkzy4ChangeBkyx = function (newValue, oldValue){
+	var bkzy = get("bkzy");
+	if (bkzy == null || bkzy == "") {
+		bkzy = get("bkzybh");
+	}
+	if (bkzy == null || bkzy == "") {
+		bkzy = get("xkbh");
+	}
+	if (bkzy != null && bkzy != "") {
+		try {
+			bkzy.load();
+		} catch(e) {
+			
+		}
+	}
+}
+/**
+ * 加载报考专业前传递报考院系编号
+ */
+var _reloadBkzy4Yx = function (param){
+	var bkyx = get("bkyx");
+	if (bkyx == null || bkyx == "") {
+		bkyx = get("bkyxbh");
+	}
+	if (bkyx == null || bkyx == "") {
+		bkyx = get("yxbh");
+	}
+	if (bkyx != null && bkyx != "") {
+		var bkyxValue = bkyx.getValue();
+		if (bkyxValue != null && bkyxValue != "") {
+			param.bkyx = bkyx.getValue();
+			param.bkyxbh = bkyx.getValue();
+			param.yxbh = bkyx.getValue();
+		}
+	}
+}
+var _reloadYjfx4YxXk = function(param) {
+	// 院系
+	var bkyx = get("bkyx");
+	if (bkyx == null || bkyx == "") {
+		bkyx = get("bkyxbh");
+	}
+	if (bkyx == null || bkyx == "") {
+		bkyx = get("yxbh");
+	}
+	if (bkyx != null && bkyx != "") {
+		var bkyxValue = bkyx.getValue();
+		if (bkyxValue != null && bkyxValue != "") {
+			param.bkyx = bkyxValue;
+			param.bkyxbh = bkyxValue;
+			param.yxbh = bkyxValue;
+		}
+	}
+	// 学科
+	var bkzy = get("bkzy");
+	if (bkzy == null || bkzy == "") {
+		bkzy = get("bkzybh");
+	}
+	if (bkzy == null || bkzy == "") {
+		bkzy = get("xkbh");
+	}
+	if (bkzy != null && bkzy != "") {
+		var bkzyValue = bkzy.getValue();
+		if (bkzyValue != null && bkzyValue != "") {
+			param.bkzy = bkzyValue;
+			param.bkzybh = bkzyValue;
+			param.xkbh = bkzyValue;
+		}
+	}
+}
+/**
+ * @desc 获取请求参数
+ * @author 胡大为
+ * @date 2022年2月15日 上午10:31:28
+ * @param variable
+ * @returns
+ */
+function _getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i=0;i<vars.length;i++) {
+    	var pair = vars[i].split("=");
+    	if(pair[0] == variable) {
+    		return pair[1];
+    	}
+    }
+    return (false);
+}
+function enterKsLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_KS_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_KS_LOGIN;
+	}
+}
+function enterYbmLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_YBM_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_YBM_LOGIN;
+	}
+}
+function enterTdxlLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_TDXL_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_TDXL_LOGIN;
+	}
+}
+function enterBsksLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_BSKS_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_BSKS_LOGIN;
+	}
+}
+function enterZjLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_ZJ_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_ZJ_LOGIN;
+	}
+}
+function enterJzgLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_JZG_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_JZG_LOGIN;
+	}
+}
+function enterXsLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+		window.location.href = AppParam.ZS_XS_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+		window.location.href = AppParam.ZS_XS_LOGIN;
+	}
+}
+function enterMsmsLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_MSMS_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_MSMS_LOGIN;
+	}
+}
+function enterTdxlLogin() {
+	var redirectUrl = _getQueryVariable("redirectUrl");
+	if (redirectUrl != null && redirectUrl != "") {
+	    window.location.href = AppParam.ZS_TDXL_LOGIN+"?redirectUrl="+redirectUrl;
+	} else {
+	    window.location.href = AppParam.ZS_TDXL_LOGIN;
+	}
+}
+function enterXxLogin() {
+    var loginUrl = "${AppParam.LOGIN_URL}";
+    loginUrl = loginUrl.substring(1, loginUrl.lastIndexOf("/")+1);
+    window.location.href = loginUrl+get("loginXxdm").getValue();
+}

@@ -1,0 +1,305 @@
+!function($) {
+	"use strict"; // jshint ;_;
+	
+	var signImgSize = 150;
+	var setTimeoutFunc;
+	WebsocketUtils.addMessageEvent("signature", function(data) {
+		var formItem = $.find(".ui-input[data-tag-id="+data.tagId+"]");
+		var that = get(formItem);
+		if(!that) return; //防止前台找不到组件报错
+		
+		if(data.startSetTimeOut == '1') {
+			setTimeoutFunc = setTimeout(function(){
+				$("<a class='refresh-qrcode'></a>").append("刷新二维码").appendTo(that.$elem.find(".qrcode-cntr")).on("click", function(){
+					that.createQrcode();
+				});
+			}, that.options.signExpires * 60000);
+		}else {
+			clearTimeout(setTimeoutFunc);
+			that.setValue(data.token);
+			
+			var sic = that.$elem.find(".sign-image-cntr");
+			sic.empty();
+			
+			//隐藏二维码
+			that.$elem.find(".qrcode-cntr").hide();
+			
+			//展示签名图片
+			var img = $("<img></img>").attr("src", "data: image/png;base64," + data.signImg);
+			
+			//展示图片范围
+			var width = that.options.imgWidth;
+			var height = that.options.imgHeight;
+			if(width && height){
+				sic = $("<div></div>").css("width", width).css("height", height).addClass("sign-image-limit").appendTo(sic);
+				img.css("max-width", "100%").css("max-height", "100%").appendTo(sic);
+			}else {
+				img.css("max-width", signImgSize).css("max-height", signImgSize).appendTo(sic);
+			}
+			
+			//重新签名按钮
+			$("<a></a>").addClass("reset-code").append("重新签名").appendTo(that.$elem.find(".sign-image-cntr")).on("click", function(){
+				that.resetSignature();
+			});
+		}
+	})
+	
+	var Signature = $.fn.baseInputTag.constructor.extend({
+		initInputViewEdit: function() {
+			var that = this;
+			var options = this.options;
+			this.opts.missingText = "请使用微信扫码签名"
+			
+			if(options.token) {
+				options.value = options.token;
+				options.imgBase64 = this.$elem.find(".sign-image-cntr img").attr("src");
+				//隐藏二维码
+				this.$elem.find(".qrcode-cntr").hide();
+				//重新签名按钮
+				$("<a></a>").append("重新签名").addClass("reset-code").appendTo(this.$elem.find(".sign-image-cntr")).on("click", function(){
+					that.resetSignature();
+				})
+				//勾选须知
+				this.$elem.find(".sign-read-chekbox")[0].checked = true;
+				
+				if(options.hideNotice && options.type == "lasted") {
+					this.$elem.find(".sign-check").hide();
+				}
+			}else {
+				this.createQrcode();
+			}
+			
+			//签名须知勾选事件
+			this.$elem.find(".sign-read-chekbox").on("click", function() {
+				that.validate();
+			})
+			//查看签名须知事件
+			this.$elem.find(".sign-read-notice>a").on("click", function() {
+				$.openDialog({
+					url : "sys/sign/enterReadNotice",
+					title : "签名须知",
+					width : 800,
+					buttons : [{
+						text : "同意",
+						onClick : function() {
+							that.$elem.find(".sign-read-chekbox")[0].checked = true;
+							that.validate();
+							$.closeDialog();
+						}
+					}]
+				})
+			})
+			
+		},
+		initInputViewText: function() {
+			var $elem = this.$elem;
+			var sic = $elem.find(".sign-image-cntr");
+			if(this.options.value) {
+				//获取签名图片
+				$.req({
+					url : "sys/sign/querySignImgById?id=" + this.options.value,
+					modal : false,
+					onLoadSuccess : function(rtn) {
+						if(rtn){
+							//展示签名图片
+							var img = $("<img></img>").attr("src", "data: image/png;base64," + rtn).css("max-width", signImgSize)
+							.css("max-height", signImgSize).appendTo(sic);
+							//防止拖拽，鼠标右键
+							img.attr("draggable", false);
+							sic[0].oncontextmenu = function() {
+								return false;
+							}
+						}else {
+							var div = $("<div><div>").addClass("sign-notfound").appendTo(sic);
+							$("<i></i>").addClass("icon icon-times-circle-o").appendTo(div);
+							$("<div>找不到签名照片</div>").appendTo(div);
+						}
+					}
+				})
+			}else {
+				var div = $("<div><div>").addClass("sign-notfound").appendTo(sic);
+				$("<i></i>").addClass("icon icon-times-circle-o").appendTo(div);
+				$("<div>没有签名信息</div>").appendTo(div);
+			}
+		},
+		focus: function() {
+			this.$elem.find(".sign-read-chekbox").focus();
+		},
+		setRequired: function(is) { },
+		setDisabled : function(is) { },
+		setReadonly : function(is) { },
+		setViewValue: function(values) {
+
+		},
+		clear: function() {
+			this._super();
+			this.resetSignature();
+			return this;
+		},
+		reset: function() {
+			this._super();
+			
+			var options = this.options;
+			if(options.value && options.imgBase64) {
+				var that = this;
+				var imgCntr = this.$elem.find(".sign-image-cntr");
+				//清空imgCntr中的所有内容
+				imgCntr.empty();
+				var i = new Image();
+				i.src = options.imgBase64;
+				
+				if(options.imgWidth && options.imgHeight) {
+					i.style.maxWidth = "100%";
+					i.style.maxHeight = "100%";
+					$("<div></div>").css("width", options.imgWidth).css("height", options.imgHeight).addClass("sign-image-limit")
+						.appendTo(imgCntr).append($(i));
+				}else {
+					i.style.maxWidth = signImgSize + "px";
+					i.style.maxHeight = signImgSize + "px";
+					$(i).appendTo(imgCntr);
+				}
+				
+				//隐藏二维码
+				this.$elem.find(".qrcode-cntr").hide();
+				//重新签名按钮
+				$("<a></a>").append("重新签名").addClass("reset-code").appendTo(this.$elem.find(".sign-image-cntr")).on("click", function(){
+					that.resetSignature();
+				})
+				//勾选须知
+				this.$elem.find(".sign-read-chekbox")[0].checked = true;
+				this.$elem.find(".sign-check .sign-read-notice").removeClass("text-danger");
+			}else {
+				this.resetSignature();
+			}
+			return this;
+		},
+		getTooltipTarget: function() {
+			return this.$elem.find(".sign-check");
+		},
+		validate : function(position, validateRequired) {
+			return this._super("bottom", validateRequired);
+		},
+		_extraValidate: function(value) {
+			var result = true;
+			if(!value){
+				result = "请使用微信扫码签名";
+			}
+			
+			if(result === true && !this.$elem.find(".sign-read-chekbox").is(":checked")){
+				result = "请阅读并勾选签名须知";
+				//调整签名须知样式
+				this.$elem.find(".sign-check .sign-read-notice").addClass("text-danger");
+			}else {
+				this.$elem.find(".sign-check .sign-read-notice").removeClass("text-danger");
+			}
+			
+			return result;
+		},
+		createQrcode: function() {
+			var that = this;
+			var $elem = this.$elem;
+			var options = this.options;
+			this.options.value = null;
+			var url = new Url("sys/sign/createQrcodeUrl");
+			url.addParam("tagId", $elem.data("tagId"));
+			url.addParam("signExpires", this.options.signExpires);
+			if(this.options.userId) {
+				url.addParam("userId", this.options.userId);
+			}
+			$.req({
+				url : url,
+				modal : false,
+				onLoadSuccess : function(rtn) {
+					$elem.find(".qrcode").empty();
+					$elem.find(".refresh-qrcode").remove();
+					$elem.find(".qrcode").qrcode({width: options.qrWidth, height: options.qrHeight, text : rtn.signUrl, correctLevel : 1});
+					
+					if(rtn.signWebsocket == "false") {
+						that.hasTimeoutFunc = false;
+						that.interval = setInterval(function() {
+							that.tryGetSignature(rtn.token);
+						}, 2000);
+					}
+				}
+			})
+		},
+		tryGetSignature: function(token) {
+			var that = this;
+			$.req({
+				url: "sys/sign/tryGetSignature?signToken=" +token,
+				modal: false,
+				success: function(data) {
+					if(data.status == '1') {
+						if(that.interval) {
+							clearInterval(that.interval);
+						}
+						if(that.setTimeoutFunc) {
+							clearTimeout(setTimeoutFunc);
+						}
+						that.hasTimeoutFunc = false;
+						
+						that.setValue(data.token);
+						var sic = that.$elem.find(".sign-image-cntr");
+						sic.empty();
+						
+						//隐藏二维码
+						that.$elem.find(".qrcode-cntr").hide();
+						
+						//展示签名图片
+						var img = $("<img></img>").attr("src", "data: image/png;base64," + data.signImg);
+						
+						//展示图片范围
+						var width = that.opts.imgWidth;
+						var height = that.opts.imgHeight;
+						if(width && height){
+							sic = $("<div></div>").css("width", width).css("height", height).addClass("sign-image-limit").appendTo(sic);
+							img.css("max-width", "100%").css("max-height", "100%").appendTo(sic);
+						}else {
+							img.css("max-width", signImgSize).css("max-height", signImgSize).appendTo(sic);
+						}
+						
+						//重新签名按钮
+						$("<a></a>").addClass("reset-code").append("重新签名").appendTo(that.$elem.find(".sign-image-cntr")).on("click", function(){
+							that.resetSignature();
+						});
+					}else if(data.status == '2') {
+						if(!that.hasTimeoutFunc) {
+							that.hasTimeoutFunc = true;
+							that.setTimeoutFunc = setTimeout(function(){
+								if(that.interval) {
+									clearInterval(that.interval);
+								}
+								$("<a class='refresh-qrcode'></a>").append("刷新二维码").appendTo(that.$elem.find(".qrcode-cntr")).on("click", function(){
+									that.createQrcode();
+									that.hasTimeoutFunc = false;
+								});
+							}, that.opts.signExpires * 60000);
+						}
+					}
+				}
+			})
+		},
+		resetSignature: function() {
+			this.$elem.find(".sign-check").show();
+			this.setValue(null);
+			this.$elem.find(".sign-image-cntr").empty();
+			this.createQrcode();
+			this.$elem.find(".qrcode-cntr").show();
+		}
+	});
+
+	$.fn.signature = function(option, param) {
+		return $.fn.baseTag.apply(this, [option, param, Signature]);
+	};
+
+	$.fn.signature.constructor = Signature;
+	Signature.DEFAULTS = $.extend({}, $.fn.baseInputTag.constructor.DEFAULTS, {
+		type: "alway",
+		lastedValidDay: 30,
+		signExpires: 5,
+		userId: null,
+		qrWidth: 100,
+		qrHeight: 100,
+		hideNotice: false,
+	});
+}(window.jQuery);

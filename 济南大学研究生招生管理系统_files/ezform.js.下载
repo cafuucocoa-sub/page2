@@ -1,0 +1,186 @@
+!function($) {
+	"use strict"; // jshint ;_;
+
+	window.FormItem = {
+		FormItemType : {
+			textInput : "textInput",
+			textarea : "textarea",
+			numberInput : "numberInput",
+			radio : "radio",
+			checkbox : "checkbox",
+			datetime : "datetime",
+			select : "select",
+			upload : "upload",
+			uploadImg : "uploadImg",
+			editor : "editor",
+			area : "area",
+			textColumn : "textColumn",
+			numberColumn : "numberColumn",
+			selectColumn : "selectColumn",
+			datetimeColumn : "datetimeColumn",
+			table : "table",
+			grid : "grid",
+			divider : "divider",
+			html : "html",
+			card : "card",
+			h3 : "h3"
+		},
+		DataSourceType : {
+			'staticData' : "staticData",
+			'dynamicData' : "dynamicData"
+		},
+		DynamicDataSourcePrefix : {
+			dict : "dict_",
+			url : "url_"
+		},
+		validType : {
+			func : "fn",
+			length : "length"
+		}
+	}
+
+	var FormGenerator = $.fn.baseTag.constructor.extend({
+		initTag : function() {
+			this.exec(this.options.initScript, [this]);
+			
+			if (this.options.url) {
+				this.load(null, true);
+			} else if(this.options.dataContext) {
+				var that = this;
+				
+				var url = new Url("formCommon/getContextData", "key", this.options.dataContext);
+				$.req({
+					url : url,
+					async : false,
+					modal : false,
+					onLoadSuccess : function(data) {
+						that.options.data = data;
+					}
+				})
+				
+				this.$elem.find(".ui-input").each(function() {
+					var id = $(this).attr("id");
+					if(typeof id != "undefined" && typeof that.options.data[id] != "undefined" ) {
+						$(this).data("value", that.options.data[id]);
+					}
+				});
+				
+				$(function() {
+					that.$elem.find("[data-toggle='grid']").each(function() {
+						var grid = get(this);
+						var id = grid.getId();
+						grid.loadData(that.options.data[id]);
+					});
+				})
+			}
+		},
+		load : function(options, isInit) {
+			options = $.isPlainObject(options) ? options : {
+				url : options || this.opts.url
+			};
+
+			$.extend(this.opts, options);
+
+			this.req({
+				url : this.opts.url,
+				onLoadSuccess : function(datas) {
+					if(isInit) {
+						this.initData(datas);
+					} else {
+						this.loadData(datas);
+					}
+				}
+			});
+
+			return this;
+		},
+		loadData : function(data) {
+			if ($.isPlainObject(data)) {
+				this.getForm().loadData(data);
+				this.$elem.find("[data-toggle='grid']").each(function() {
+					var grid = get(this);
+					var id = grid.getId();
+					grid.loadData(data[id]);
+				});
+			}
+
+			return this;
+		},
+		initData : function(data) {
+			if ($.isPlainObject(data)) {
+				this.getForm().initData(data);
+				this.$elem.find("[data-toggle='grid']").each(function() {
+					var grid = get(this);
+					var id = grid.getId();
+					grid.loadData(data[id]);
+				});
+			}
+
+			return this;
+		},
+		getData : function() {
+			var data = {};
+			
+			this.getForm().eachInput(function() {
+				var id = this.options.id;
+				if(id) {
+					data[id] = this.getValue();
+				}
+			});
+			
+			this.$elem.find("[data-toggle='grid']").each(function() {
+				var grid = get(this);
+				var id = grid.getId();
+				data[id] = grid.getRows();
+			});
+			
+			this.$elem.find("[data-toggle='area'], [data-toggle='radio'], [data-toggle='checkbox'], [data-toggle='select']").each(function() {
+				var ezElem = get(this);
+				var id = ezElem.getId();
+				id += "_text";
+				data[id] = ezElem.getText();
+			});
+
+			return data;
+		},
+		validate : function() {
+			var flag = true;
+			flag = this.getForm().validate();
+			if (flag) {
+				this.$elem.find("[data-toggle='grid']").each(function() {
+					flag = get(this).validate();
+					return flag;
+				});
+			}
+
+			return flag;
+		},
+		resetStatus : function() {
+			this.getForm().resetStatus();
+		},
+		getForm : function() {
+			if (!this.form) {
+				this.form = get(this.$elem.find("[data-toggle='form']"));
+			}
+
+			return this.form;
+		},
+		on : function(id, key, value) {
+			var $elem = this.$elem.find("#" + id);
+			if($elem.length) {
+				$elem.data("on" + key.slice(0,1).toUpperCase() + key.slice(1), value);
+			}
+		}
+	});
+
+	$.fn.formGenerator = function(options, param) {
+		return $.fn.baseTag.apply(this, [ options, param, FormGenerator ]);
+	};
+
+	$.fn.formGenerator.constructor = FormGenerator;
+	FormGenerator.DEFAULTS = {
+		url : null,
+		dataContext : null,
+		initScript : null
+	}
+}(window.jQuery)

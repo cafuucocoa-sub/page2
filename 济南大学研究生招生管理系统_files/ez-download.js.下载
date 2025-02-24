@@ -1,0 +1,137 @@
+!function($) {
+	"use strict"; // jshint ;_;
+
+	if (typeof window.fetch !== 'function') {
+		console.warn('Fetch is not supported');
+	}
+
+	var errorHandler = function (result) {
+		if (result.type == "sessionout") {
+			$.alert({
+				title: result.msg,
+				type: "warning",
+				buttons: [{
+					text: "重新登录",
+					onClick: function () {
+						var loginUrl = result.loginUrl;
+						var redirectURL = encodeURI(location.href);
+						loginUrl += ((loginUrl.indexOf("?") == -1 ? "?" : "&") + "redirectUrl=" + redirectURL);
+						location.href = loginUrl;
+					}
+				}]
+			});
+		} else {
+			$.util.exec($.req.defaults.onLoadError, [result], {
+				context: null
+			});
+		}
+	};
+
+	window.DownloadUtils = {
+		addDownloadRecord: function (url) {
+			if (!url) {
+				throw new Error("url不能为空");
+			}
+
+			$.req({
+				url: url,
+				onLoadError: function (err) {
+					$.alert(err.msg, "warning");
+				},
+				onLoadSuccess: function (result) {
+					if (result && result.recordId) {
+						DownloadUtils.download("download/download4Appointment?downloadId=" + result.recordId)
+					} else {
+						$.alert("预约完成，请耐心等待文件生成。", "success");
+					}
+				}
+			});
+		},
+		enterMyDownload: function(options) {
+			options = $.extend({
+				title: '查看我的下载预约',
+				tag: ''
+			}, options);
+
+			var url = new Url("download/enterMyDownload");
+			url.addParam("tag", options.tag);
+			$.openDialog({
+				url: url,
+				width: TagConstant.DialogWidth.LONG,
+				title: options.title
+			});
+		},
+		download: function (url, data) {
+			if (!url) {
+				throw new Error("url不能为空");
+			}
+
+			var options = {
+				method: 'post'
+			};
+
+			if ($._getToken && $._getToken()) {
+				options.headers = {
+					'Content-Type': 'application/json',
+					'X-Requested-With': 'XMLHttpRequest', // 让后端识别为Ajax请求
+					"Authorization": 'Bearer ' + $._getToken()
+				}
+			}
+
+			if (data) {
+				options.body = JSON.stringify(data);
+			}
+
+			var fileName = '';
+			var isDownloadFile = false;
+			var modal = $.load("文件下载中。");
+			fetch(url, options)
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+
+					// 获取Content-Disposition头中的文件名
+					var contentDisposition = response.headers.get('content-disposition');
+					if (contentDisposition) {
+						var matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+						if (matches != null && matches[1]) {
+							fileName = matches[1].replace(/['"]/g, '');
+							// 转码获取中文名
+							fileName = decodeURI(fileName)
+						}
+
+						isDownloadFile = true;
+						return response.blob();
+					} else if (response.headers.get('content-length') > 0) { // 没有下载文件，跳过
+						return response.json();
+					}
+				})
+				.then(blob => {
+					if (isDownloadFile) {
+						var url = URL.createObjectURL(blob);
+						var a = document.createElement('a');
+						a.href = url;
+						a.download = fileName || '未知文件';
+						a.click();
+						setTimeout(() => URL.revokeObjectURL(url), 100);
+						return;
+					} else if (blob) {
+						var data = blob;
+						if ($.isPlainObject(data) && data.success === false) {
+							errorHandler(data);
+							return;
+						}
+					}
+
+					// 没有文件下载和系统异常，则默认预约下载
+					$.alert("预约完成，请耐心等待文件生成。", "success");
+				})
+				.catch(error => console.error('There has been a problem with your fetch operation:', error))
+				.finally(() => {
+					// 无论成功或失败都会执行的操作
+					$.hideLoad(modal);
+				});
+		}
+	}
+}(window.jQuery)

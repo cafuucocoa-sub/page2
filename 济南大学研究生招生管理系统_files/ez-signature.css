@@ -1,0 +1,65 @@
+.signature-cntr>.qrcode-cntr {
+    background-color: #eee;
+    width: fit-content;
+    padding: 10px;
+}
+.signature-cntr>.qrcode-cntr>.refresh-qrcode {
+	position: absolute;
+	margin-left: 36px;
+}
+.signature-cntr>.sign-check>.checkbox {
+    width: 16px;
+    height: 16px;
+}
+.sign-notfound {
+    width: 120px;
+    height: 120px;
+    text-align: center;
+    padding-top: 30px;
+    border: 1px solid #F5222D;
+    color: #F5222D;
+    border-radius: 4px;
+}
+.sign-notfound-procnode {
+	display: inline-block;
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    border: 1px solid #F5222D;
+    color: #F5222D;
+    border-radius: 4px;
+}
+.sign-notfound .icon {
+    font-size: 24px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 8px;
+}
+.sign-check {
+    padding-top: 4px;
+    width: 210px;
+}
+.sign-check .sign-read-chekbox {
+	margin-top: 5px;
+    width: 12px;
+    height: 12px;
+}
+.sign-check .sign-read-notice {
+    margin-left: 8px;
+}
+.sign-check .sign-read-notice a{
+    color: #FAAD14;
+}
+.sign-check .sign-read-notice a:hover{
+    color: #ffc841;
+}
+.sign-image-cntr .reset-code {
+	margin-left: 8px;
+}
+.sign-image-cntr .sign-image-limit {
+	border: 1px solid #d9d9d9;
+	border-radius: 4px;
+	display: inline-block;
+	vertical-align: bottom;
+	padding: 4px;
+}

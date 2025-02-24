@@ -1,0 +1,10 @@
+/*!
+ * jQuery Cropper v1.0.1
+ * https://fengyuanchen.github.io/jquery-cropper
+ *
+ * Copyright 2018-present Chen Fengyuan
+ * Released under the MIT license
+ *
+ * Date: 2019-10-19T08:48:33.062Z
+ */
+(function(b,a){typeof exports==="object"&&typeof module!=="undefined"?a(require("jquery"),require("cropperjs")):typeof define==="function"&&define.amd?define(["jquery","cropperjs"],a):(b=b||self,a(b.jQuery,b.Cropper))}(this,function(e,d){e=e&&e.hasOwnProperty("default")?e["default"]:e;d=d&&d.hasOwnProperty("default")?d["default"]:d;if(e&&e.fn&&d){var f=e.fn.cropper;var c="cropper";e.fn.cropper=function a(k){for(var h=arguments.length,i=new Array(h>1?h-1:0),j=1;j<h;j++){i[j-1]=arguments[j]}var g;this.each(function(o,n){var l=e(n);var r=k==="destroy";var q=l.data(c);if(!q){if(r){return}var m=e.extend({},l.data(),e.isPlainObject(k)&&k);q=new d(n,m);l.data(c,q)}if(typeof k==="string"){var p=q[k];if(e.isFunction(p)){g=p.apply(q,i);if(g===q){g=undefined}if(r){l.removeData(c)}}}});return g!==undefined?g:this};e.fn.cropper.Constructor=d;e.fn.cropper.setDefaults=d.setDefaults;e.fn.cropper.noConflict=function b(){e.fn.cropper=f;return this}}}));

@@ -1,0 +1,17 @@
+//院系级联更新学科
+function _changeYx4LoadXk() {
+    get("xkbh").load();
+}
+//院系级联更新加载学科
+function _beforeLoadXk(param) {
+    param.yxbh = get("yxbh").getValue();
+}
+//院系级联更新学科
+function _changeXk4LoadYjfx() {
+    get("yjfxbh").load();
+}
+//院系级联更新加载学科
+function _beforeLoadYjfx(param) {
+    param.yxbh = get("yxbh").getValue();
+    param.xkbh = get("xkbh").getValue();
+}
