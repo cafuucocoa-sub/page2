@@ -98,37 +98,5 @@ body {
 	</form>
 </div><div class="modal-footer"><button class="ezui btn btn-primary" data-toggle="button" type="button" data-disabled="false" data-on-click_proxy="data_0"><span>查询</span></button></div></div></div></div>
 
-<script type="text/javascript">
-	//弹出查询条件验证窗口
-	$(function() {
-		get("checkKsxx").show();
-	});
-	//查询按钮
-	function addSelectBtn() {
-		var btnArr = [];
-		btnArr.push({
-			text : "查询",
-			onClick : function() {
-				var formFlag = get("ksxxForm").validate();
-				if (formFlag) {
-					var ksxxForm = get("ksxxForm").getData();
-					var checkUrl = new Url("zsKsdCs/checkKsxx4Select");
-                    var zjhm = RsaUtils.encode(get("zjhm").getValue(), "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBD+OY+C7WOI7L0NbkrM1DU0G5qsl0sIRb2G2BI3VgT7nR2T8x8zLMy5QqnB0CULsrStwq8Rr/0tLdJmr/pIn2Nvz3DI71XLVrnGoHPDlTjlQk/rH9467PzgvQCMjNewm1+r+cd0zL0VQryBLYOIGgGBi1Ad/Q31/enNqCJw2ejwIDAQAB");
-                    ksxxForm.zjhm = zjhm;
-					checkUrl.addParam("ksxxForm", ksxxForm);
-					$.req(checkUrl, function() {
-						$.closeDialog();
-						reloadCard(ksxxForm);//刷新card页
-					});
-				}
-			}
-		});
-		return btnArr;
-	}
-	function reloadCard(ksxxForm) {
-		var url = new Url("zsKsdCs/enterViewKscj");
-		url.addParam("conditions", ksxxForm);
-		get("card").refresh(url);
-	}
-</script>
+
 <deepl-input-controller><template shadowrootmode="open"><link rel="stylesheet" href="chrome-extension://fancfknaplihpclbhbpclnmmjcjanbaf/build/content.css"><div dir="ltr" style="visibility: initial !important;"><div class="dl-input-translation-container svelte-95aucy"><div></div></div></div></template></deepl-input-controller></body></html>
